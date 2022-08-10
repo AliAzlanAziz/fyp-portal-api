@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import { checkReachable, postSignup, postSignin, postAcceptRequest, postRejectRequest,
-    postCloseAdvisorRequest, getAllStudentRequests  } from '../controllers/advisor';
+    postCloseAdvisorRequest, getAllStudentRequests, getStudentRequest  } from '../controllers/advisor';
 import { isAdvisorsContract } from '../middlewares/isAdvisorAuthorized';
 import { isAdvisorAuthenticated } from '../middlewares/isRoleAuthenticated';
 
@@ -19,5 +19,7 @@ router.post('/reject/request', isAdvisorAuthenticated, isAdvisorsContract, postR
 router.post('/close/request', isAdvisorAuthenticated, isAdvisorsContract, postCloseAdvisorRequest);
 
 router.get('/requests', isAdvisorAuthenticated, getAllStudentRequests);
+
+router.get('/request/:id', isAdvisorAuthenticated, isAdvisorsContract, getStudentRequest);
 
 export default router;

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';  
-import { Signin, Signup, AcceptRequest, RejectRequest, CloseAdvisorRequest, AllStudentRequests } from '../services/advisor';
+import { Signin, Signup, AcceptRequest, RejectRequest, CloseAdvisorRequest, AllStudentRequests,
+    StudentRequest } from '../services/advisor';
 
 export const checkReachable = (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({ message: "Student APIs reachabled"} )
@@ -27,4 +28,8 @@ export const postCloseAdvisorRequest = (req: Request, res: Response, next: NextF
 
 export const getAllStudentRequests = (req: Request, res: Response, next: NextFunction) => {
     return AllStudentRequests(req.query.acceptance_status as string, req.context, res);
+}
+
+export const getStudentRequest = (req: Request, res: Response, next: NextFunction) => {
+    return StudentRequest(req.params.id as string, res);
 }

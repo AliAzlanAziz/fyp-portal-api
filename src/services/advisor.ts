@@ -178,14 +178,35 @@ export const AllStudentRequests = async (status: string, context: ContextModel, 
             })
         }
 
-        const contracts = await Contract.find({ advisor: context.user._id, acceptance: status })
+        const contracts = await Contract
+                                .find({ advisor: context.user._id, acceptance: status })
+                                .populate('student', '_id name ID').select({studentOne: 0, studentTwo: 0, advisor: 0})
 
         return res.status(200).json({
+            success: true,
             message: contracts.length + ' rows retreived!',
             contracts: contracts
         })
     }catch(error){
         return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const StudentRequest = async (id: string, res: Response) => {
+    try{
+        const contract = await Contract.findById(id).populate('student', '_id name ID').select({advisor: 0})
+
+        return res.status(200).json({
+            success: true,
+            message: 'successful!',
+            contract: contract
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
             message: "Internal server error!"
         })
     }
