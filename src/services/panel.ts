@@ -14,12 +14,14 @@ const Signup = async (user: UserSignupModel, res: Response) => {
         const userExist = await User.findOne({ email: user.email })
         if(userExist){
             return res.status(404).json({
+                success: false,
                 message: "Error signing up!"
             })
         }
 
         if(user.password !== user.confirmPassword){
             return res.status(401).json({
+                success: false,
                 message: "Password does not match with confirm password!"
             })
         }
@@ -38,10 +40,12 @@ const Signup = async (user: UserSignupModel, res: Response) => {
         await newUser.save()
 
         return res.status(200).json({
-            message: "Success"
+            success: true,
+            message: "Successfully signed up!"
         })
     }catch(error){
         return res.status(500).json({
+            success: false,
             message: "Error signing up!"
         })
     }

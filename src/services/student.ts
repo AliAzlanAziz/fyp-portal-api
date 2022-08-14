@@ -19,18 +19,21 @@ export const Signup = async (user: UserSignupModel, res: Response) => {
         const userExist = await User.findOne({ email: user.email })
         if(userExist){
             return res.status(404).json({
+                success: false,
                 message: "Error signing up!"
             })
         }
 
         if(user.password !== user.confirmPassword){
             return res.status(400).json({
+                success: false,
                 message: "Password does not match with confirm password!"
             })
         }
 
         if(!user.ID){
             return res.status(400).json({
+                success: false,
                 message: "Student must enter his/her registration ID provided by the university! Enter correct ID as it cannot be modified later"
             })
         }
@@ -49,10 +52,12 @@ export const Signup = async (user: UserSignupModel, res: Response) => {
         await newUser.save()
 
         return res.status(200).json({
-            message: "Success"
+            success: true,
+            message: "Successfully signed up!"
         })
     }catch(error){
         return res.status(500).json({
+            success: false,
             message: "Error signing up!"
         })
     }
@@ -63,12 +68,14 @@ export const Signin = async (user: UserSigninModel, res: Response) => {
         const result = await User.findOne({ email: user.email })
         if(!result){
             return res.status(404).json({
+                success: false,
                 message: "User does not exist!",
             })
         }
 
         if(!isStudent(result.role)){
             return res.status(401).json({
+                success: false,
                 message: "Unauthorized Access!"
             })
         }
@@ -86,16 +93,19 @@ export const Signin = async (user: UserSigninModel, res: Response) => {
             )
 
             return res.status(200).json({
-                message: "Success",
+                success: false,
+                message: "Successfully signed in!",
                 token: token
             })
         }else{
             return res.status(401).json({
+                success: false,
                 message: "Incorrect Credentials!"
             })
         }
     }catch(error){
         return res.status(500).json({
+            success: false,
             message: "Error signing in!"
         })
     }
@@ -227,15 +237,18 @@ export const CloseAdvisorRequest = async (contract: ContractModel, res: Response
         )
         if(!contractUpdated){
             return res.status(400).json({
+                status: false,
                 message: 'Something wrong!'
             })
         }
 
         return res.status(200).json({
+            status: true,
             message: 'Request closed successfully!'
         })
     }catch(error){
         return res.status(500).json({
+            status: false,
             message: "Internal server error!"
         })
     }
