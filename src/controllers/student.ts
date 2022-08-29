@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';  
 import { AllAdvisors, Signin, Signup, SelectAdvisor, CloseAdvisorRequest, AllAdvisorsRequest, 
-    AdvisorRequest } from '../services/student';
+    AdvisorRequest, SubmitAdvisorForm, AdvisorForm } from '../services/student';
 
 export const checkReachable = (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({ message: "Student APIs reachabled"} );
@@ -32,4 +32,12 @@ export const getAllAdvisorsRequest = (req: Request, res: Response, next: NextFun
 
 export const getAdvisorRequest = (req: Request, res: Response, next: NextFunction) => {
     return AdvisorRequest(req.params.id as string, res);
+}
+
+export const postSubmitAdvisorForm = (req: Request, res: Response, next: NextFunction) => {
+    return SubmitAdvisorForm(req.body.contract, res);
+}
+
+export const getAdvisorForm = (req: Request, res: Response, next: NextFunction) => {
+    return AdvisorForm(req.params.id as string, res);
 }

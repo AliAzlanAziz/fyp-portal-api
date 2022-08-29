@@ -53,7 +53,64 @@ const contractSchema = new Schema({
     isClosed: {
         type: Boolean,
         default: false
-    }
+    },
+    advisorForm: {
+        _id: {
+            type: Types.ObjectId,
+        },
+        advisorName: String,
+        designation: String,
+        department: String,
+        qualification: String,
+        specialization: String,
+        contact: String,
+        email: { 
+            type: String, 
+            unique: true,
+            match: /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/
+        },
+        semester: Number,
+        year: Number,
+        program: String,
+        creditHours: Number,
+        compensation: Number,
+        cost: Number,
+        project: {
+            name: {
+                type: String,
+            },
+            description: {
+                type: String,
+                min: 1,
+                max: 512
+            }
+        },
+        tools: {
+            hardware: String,
+            software: String
+        },
+        studentOne: {
+            name: {
+                type: String,
+            },
+            ID: {
+                type: String,
+            }
+        },
+        studentTwo: {
+            name: {
+                type: String,
+            },
+            ID: {
+                type: String,
+            }
+        },
+        referenceNo: String
+    },
+    panel: {
+        type: Types.ObjectId,
+        ref: 'Panel',
+    },
 })
 
 const Contract = model('Contract', contractSchema);

@@ -35,6 +35,7 @@ const Signup = async (user: UserSignupModel, res: Response) => {
             password: hash,
             role: UserRoles.PANEL,
             department: user.department,
+            inPanel: false
         }); 
 
         await newUser.save()

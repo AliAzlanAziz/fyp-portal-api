@@ -6,6 +6,11 @@ import { UserSignupModel } from "../models/userSignup.model";
 import { UserSigninModel } from "../models/userSignin.model";
 import User from '../schema/user';
 import { UserRoles, isAdmin } from "../enums/roles.enum";
+import Contract from "../schema/contract";
+import { AcceptanceStatus } from "../enums/contract.enum";
+import Panel from "../schema/panel";
+import { isLimitReached } from "../constants/panel";
+import { PanelModel } from "../models/panel.model";
 
 const saltRounds = 10;
 
@@ -122,6 +127,173 @@ export const AllStudents = async (res: Response) => {
         })
     }catch(error){
         return res.status(500).json({
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const StudentRequest = async (id: string, res: Response) => {
+    try{
+        const contract = await Contract.findOne({student: id, acceptance: AcceptanceStatus.ACCEPTED, isClosed: false})
+        .populate('advisor', '_id name department')
+        .populate('student', '_id name ID')
+
+        return res.status(200).json({
+            success: true,
+            message: 'successful!',
+            contract: contract
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const AdvisorDetails = async (id: string, res: Response) => {
+    try{
+        const contracts = await Contract.find({advisor: id, acceptance: AcceptanceStatus.ACCEPTED, isClosed: false})
+        .populate('advisor', '_id name department')
+        .populate('student', '_id name ID')
+        .select({advisorForm: 0, isClosed: 0, acceptance: 0})
+
+        return res.status(200).json({
+            success: true,
+            message: 'successful!',
+            contracts: contracts
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const ListOfStaffForPanel = async (res: Response) => {
+    try{
+        const users = await User.find({ inPanel: false })
+                            .or([{ role: UserRoles.ADVISOR }, { role: UserRoles.PANEL }])
+                            .select('name department role')
+
+        return res.status(200).json({
+            success: true,
+            message: users.length + ' users retreived for panel',
+            users: users
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const CreatePanel = async (panel: PanelModel, res: Response) => {
+    try{
+        if(isLimitReached(panel.members.length)){
+            return res.status(400).json({
+                message: "Panel cannot contain more than seven members!"
+            })
+        }
+        if(panel.name == null || panel.name == undefined){
+            return res.status(400).json({
+                message: "Panel name must be entered!"
+            })
+        }
+
+        const newPanel = new Panel({
+            _id: new Types.ObjectId(),
+            name: panel.name,
+            members: panel.members,
+            isClosed: false
+        })
+        await newPanel.save();
+
+        for(const id of panel.members){
+            await User.findByIdAndUpdate(id, { inPanel: true })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Panel created successfully'
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const PanelDetails = async (id: string, res: Response) => {
+    try{
+        const panel = await Panel.findById(id)
+                            .populate({
+                                path: 'members', 
+                                select: ['_id', 'name', 'department', 'role']
+                              })
+                            .select({ _id:1, name:1, members: 1 })
+                            .lean()
+
+        return res.status(200).json({
+            success: true,
+            message: 'successful!',
+            panel: panel
+        })
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const AllPanels = async (res: Response) => {
+    try{
+        const panels = await Panel.find({ isClosed: false }).select({members: 0, isClosed: 0}).lean()
+
+        return res.status(200).json({
+            success: true,
+            message: panels.length + ' panels retrieved.',
+            panels: panels
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const ClosePanel = async (panel: PanelModel, res: Response) => {
+    try{
+        const panelUpdated = await Panel.findOneAndUpdate(
+            { _id: panel.id }, 
+            { isClosed: true }, 
+            { new: true }
+        )
+        if(!panelUpdated){
+            return res.status(400).json({
+                status: false,
+                message: 'Something wrong!'
+            })
+        }
+
+        for(const id of panel.members){
+            await User.findByIdAndUpdate(id, { inPanel: false })
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Panel closed successfully!'
+        })
+    }catch(error){
+        console.log(error);
+        return res.status(500).json({
+            status: false,
             message: "Internal server error!"
         })
     }

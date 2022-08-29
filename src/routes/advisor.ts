@@ -1,25 +1,62 @@
-import express, { Router } from 'express';
-import { checkReachable, postSignup, postSignin, postAcceptRequest, postRejectRequest,
-    postCloseAdvisorRequest, getAllStudentRequests, getStudentRequest  } from '../controllers/advisor';
-import { isAdvisorsContract } from '../middlewares/isAdvisorAuthorized';
-import { isAdvisorAuthenticated } from '../middlewares/isRoleAuthenticated';
+import express, { Router } from "express";
+import {
+  checkReachable,
+  postSignup,
+  postSignin,
+  postAcceptRequest,
+  postRejectRequest,
+  postCloseAdvisorRequest,
+  getAllStudentRequests,
+  getStudentRequest,
+  getAdvisorForm,
+} from "../controllers/advisor";
+import { isAdvisorsContract } from "../middlewares/isAdvisorAuthorized";
+import { isAdvisorAuthenticated } from "../middlewares/isRoleAuthenticated";
 
 const router: Router = express.Router();
 
-router.get('/', checkReachable);
 
-router.post('/signup', postSignup);
+router.get("/", checkReachable);
 
-router.post('/signin', postSignin);
+router.post("/signup", postSignup);
 
-router.post('/accept/request', isAdvisorAuthenticated, isAdvisorsContract, postAcceptRequest);
+router.post("/signin", postSignin);
 
-router.post('/reject/request', isAdvisorAuthenticated, isAdvisorsContract, postRejectRequest);
+router.post(
+  "/accept/request",
+  isAdvisorAuthenticated,
+  isAdvisorsContract,
+  postAcceptRequest
+);
 
-router.post('/close/request', isAdvisorAuthenticated, isAdvisorsContract, postCloseAdvisorRequest);
+router.post(
+  "/reject/request",
+  isAdvisorAuthenticated,
+  isAdvisorsContract,
+  postRejectRequest
+);
 
-router.get('/requests', isAdvisorAuthenticated, getAllStudentRequests);
+router.post(
+  "/close/request",
+  isAdvisorAuthenticated,
+  isAdvisorsContract,
+  postCloseAdvisorRequest
+);
 
-router.get('/request/:id', isAdvisorAuthenticated, isAdvisorsContract, getStudentRequest);
+router.get("/requests", isAdvisorAuthenticated, getAllStudentRequests);
+
+router.get(
+  "/request/:id",
+  isAdvisorAuthenticated,
+  isAdvisorsContract,
+  getStudentRequest
+);
+
+router.get(
+  "/form/:id",
+  isAdvisorAuthenticated,
+  isAdvisorsContract,
+  getAdvisorForm
+);
 
 export default router;

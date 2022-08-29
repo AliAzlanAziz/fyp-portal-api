@@ -63,6 +63,7 @@ export const isAdminAuthenticated = async (req: Request, res: Response, next: Ne
         req.context  = getContext(result);
         return next();
     }catch(error){
+        console.log(error)
         return res.status(500).json({
             message: "Internal Server Error!"
         })

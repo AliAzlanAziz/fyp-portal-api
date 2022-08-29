@@ -33,6 +33,9 @@ const userSchema = new Schema({
     role: {
         type: Number,
         required: true
+    },
+    inPanel: {
+        type: Boolean
     }
 })
 

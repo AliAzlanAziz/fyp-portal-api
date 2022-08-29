@@ -46,7 +46,7 @@ export const Signup = async (user: UserSignupModel, res: Response) => {
             email: user.email,
             password: hash,
             role: UserRoles.STUDENT,
-            ID: user.ID
+            ID: user.ID,
         }); 
 
         await newUser.save()
@@ -265,7 +265,8 @@ export const AllAdvisorsRequest = async (status: string, context: ContextModel, 
 
         const contracts = await Contract
                                 .find({ student: context.user._id, acceptance: status })
-                                .populate('advisor', '_id name department').select({studentOne: 0, studentTwo: 0, student: 0})
+                                .populate('advisor', '_id name department')
+                                .select({advisor: 1, project: 1, acceptance: 1, isClosed: 1, advisorForm: { _id: 1 }})
 
         return res.status(200).json({
             success: true,
@@ -273,6 +274,7 @@ export const AllAdvisorsRequest = async (status: string, context: ContextModel, 
             contracts: contracts
         })
     }catch(error){
+        console.log(error);
         return res.status(500).json({
             success: false,
             message: "Internal server error!"
@@ -282,7 +284,84 @@ export const AllAdvisorsRequest = async (status: string, context: ContextModel, 
 
 export const AdvisorRequest = async (id: string, res: Response) => {
     try{
-        const contract = await Contract.findById(id).populate('advisor', '_id name department').select({student: 0})
+        const contract = await Contract.findById(id).populate('advisor', '_id name department').select({student: 0, advisorForm: 0})
+
+        return res.status(200).json({
+            success: true,
+            message: 'successful!',
+            contract: contract
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const SubmitAdvisorForm = async (contract: ContractModel, res: Response) => {
+    try{
+        const existingContract = await Contract.findById(contract.id).populate('advisor');
+
+        if(existingContract?.advisorForm?._id){
+            return res.status(200).json({
+                success: false,
+                message: 'Already submitted advisor form!',
+            })
+        }
+
+        const advisorForm = {
+            _id: new Types.ObjectId(),
+            advisorName: (<typeof User>existingContract?.advisor).name,
+            designation: contract.advisorForm.designation,
+            department: contract.advisorForm.department,
+            qualification: contract.advisorForm.qualification,
+            specialization: contract.advisorForm.specialization,
+            contact: contract.advisorForm.contact,
+            email: contract.advisorForm.email,
+            semester: contract.advisorForm.semester,
+            year: contract.advisorForm.year,
+            program: contract.advisorForm.program,
+            creditHours: contract.advisorForm.creditHours,
+            compensation: contract.advisorForm.compensation,
+            project: {
+                name: existingContract?.project?.name,
+                description: existingContract?.project?.description,
+            },
+            tools: {
+                hardware: contract.advisorForm.tools.hardware,
+                software: contract.advisorForm.tools.software,
+            },
+            cost: contract.advisorForm.cost,
+            studentOne: {
+                name: existingContract?.studentOne?.name,
+                ID: existingContract?.studentOne?.ID,
+            },
+            studentTwo: {
+                name: existingContract?.studentTwo?.name,
+                ID: existingContract?.studentTwo?.ID,
+            },
+            referenceNo: contract.advisorForm.referenceNo,
+        }
+
+        await Contract.findByIdAndUpdate(contract.id, { advisorForm: advisorForm });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Successfully submitted advisor form!',
+        })
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const AdvisorForm = async (id: string, res: Response) => {
+    try{
+        const contract = await Contract.findById(id).select({advisorForm: 1})
 
         return res.status(200).json({
             success: true,
