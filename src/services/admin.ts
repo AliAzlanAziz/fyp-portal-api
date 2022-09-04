@@ -11,6 +11,9 @@ import { AcceptanceStatus } from "../enums/contract.enum";
 import Panel from "../schema/panel";
 import { isLimitReached } from "../constants/panel";
 import { PanelModel } from "../models/panel.model";
+import { MarksModel } from "../models/marks.model";
+import { ContractModel } from "../models/contract.model";
+import { isValidAdminMarks } from "../constants/marks";
 
 const saltRounds = 10;
 
@@ -156,7 +159,47 @@ export const AdvisorDetails = async (id: string, res: Response) => {
         const contracts = await Contract.find({advisor: id, acceptance: AcceptanceStatus.ACCEPTED, isClosed: false})
         .populate('advisor', '_id name department')
         .populate('student', '_id name ID')
-        .select({advisorForm: 0, isClosed: 0, acceptance: 0})
+        .select({advisorForm: 0, isClosed: 0, acceptance: 0, marks: 0, panel: 0})
+
+        return res.status(200).json({
+            success: true,
+            message: 'successful!',
+            contracts: contracts
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const AllContractsNotInPanel = async (res: Response) => {
+    try{
+        const contracts = await Contract.find({acceptance: AcceptanceStatus.ACCEPTED, isClosed: false, inPanel: false})
+        .populate('advisor', '_id name department')
+        .populate('student', '_id name ID')
+        .select({advisorForm: 0, isClosed: 0, acceptance: 0, marks: 0, panel: 0, inPanel: 0})
+
+        return res.status(200).json({
+            success: true,
+            message: 'successful!',
+            contracts: contracts
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const AllContracts = async (res: Response) => {
+    try{
+        const contracts = await Contract.find({acceptance: AcceptanceStatus.ACCEPTED, isClosed: false})
+        .populate('advisor', '_id name department')
+        .populate('student', '_id name ID')
+        .select({advisorForm: 0, isClosed: 0, acceptance: 0, marks: 0, panel: 0, inPanel: 0})
 
         return res.status(200).json({
             success: true,
@@ -202,6 +245,14 @@ export const CreatePanel = async (panel: PanelModel, res: Response) => {
                 message: "Panel name must be entered!"
             })
         }
+        for(const id of panel.members){
+            const user = await User.findById(id);
+            if(user?.inPanel){
+                return res.status(400).json({
+                    message: "One or more of the selected advisor/panel is already in panel!"
+                })
+            }
+        }
 
         const newPanel = new Panel({
             _id: new Types.ObjectId(),
@@ -212,7 +263,7 @@ export const CreatePanel = async (panel: PanelModel, res: Response) => {
         await newPanel.save();
 
         for(const id of panel.members){
-            await User.findByIdAndUpdate(id, { inPanel: true })
+            await User.findByIdAndUpdate(id, { inPanel: true, panel: newPanel._id })
         }
 
         return res.status(200).json({
@@ -233,8 +284,8 @@ export const PanelDetails = async (id: string, res: Response) => {
                             .populate({
                                 path: 'members', 
                                 select: ['_id', 'name', 'department', 'role']
-                              })
-                            .select({ _id:1, name:1, members: 1 })
+                            })
+                            .select({ _id:1, name:1, members: 1, contracts: 1 })
                             .lean()
 
         return res.status(200).json({
@@ -283,7 +334,7 @@ export const ClosePanel = async (panel: PanelModel, res: Response) => {
         }
 
         for(const id of panel.members){
-            await User.findByIdAndUpdate(id, { inPanel: false })
+            await User.findByIdAndUpdate(id, { inPanel: false, panel: null })
         }
 
         return res.status(200).json({
@@ -292,6 +343,69 @@ export const ClosePanel = async (panel: PanelModel, res: Response) => {
         })
     }catch(error){
         console.log(error);
+        return res.status(500).json({
+            status: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const AddContractsToPanel = async (panel: PanelModel, res: Response) => {
+    try{
+        const panelUpdated = await Panel.findOneAndUpdate(
+            { _id: panel.id }, 
+            { contracts: panel.contracts }, 
+            { new: true }
+        )
+        if(!panelUpdated){
+            return res.status(400).json({
+                status: false,
+                message: 'Something wrong!'
+            })
+        }
+
+        for(const id of panel.contracts){
+            await Contract.findByIdAndUpdate(id, { inPanel: true, panel: panel.id })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'FYP Groups added successfully'
+        })
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const AdminMarks = async (contract: ContractModel, res: Response) => {
+    try{
+        if(!isValidAdminMarks(contract.marks.admin)){
+            return res.status(400).json({
+                status: false,
+                message: 'Invalid marks!'
+            })
+        }
+        
+        const contractUpdated = await Contract.findOneAndUpdate(
+            { _id: contract.id },
+            { marks: { admin: contract.marks.admin } },
+            { new: true }
+        )
+        if(!contractUpdated){
+            return res.status(400).json({
+                status: false,
+                message: 'Something wrong!'
+            })
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Marks updated successfully!'
+        })
+    }catch(error){
         return res.status(500).json({
             status: false,
             message: "Internal server error!"

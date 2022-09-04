@@ -107,10 +107,52 @@ const contractSchema = new Schema({
         },
         referenceNo: String
     },
+    inPanel: {
+        type: Boolean,
+        default: false
+    },
     panel: {
         type: Types.ObjectId,
         ref: 'Panel',
     },
+    marks: {
+        mid: [
+            {
+                evaluator: {
+                    type: Types.ObjectId,
+                    ref: 'User'
+                },
+                mark: {
+                    type: Number,
+                    min: 0,
+                    max: 20
+                },
+            }
+        ],
+        final: [
+            {
+                evaluator: {
+                    type: Types.ObjectId,
+                    ref: 'User'
+                },
+                mark: {
+                    type: Number,
+                    min: 0,
+                    max: 20
+                },
+            }
+        ],
+        advisor: {
+            type: Number,
+            min: 0,
+            max: 30
+        },
+        admin: {
+            type: Number,
+            min: 0,
+            max: 10
+        }
+    }
 })
 
 const Contract = model('Contract', contractSchema);

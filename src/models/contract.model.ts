@@ -49,5 +49,9 @@ export class ContractModel  {
             ID: String;
         };
         referenceNo: String;
+    };
+    marks: {
+        admin: Number,
+        advisor: Number
     }
 }

@@ -9,12 +9,12 @@ import {
   getAllStudentRequests,
   getStudentRequest,
   getAdvisorForm,
+  postAdvisorMarks,
 } from "../controllers/advisor";
 import { isAdvisorsContract } from "../middlewares/isAdvisorAuthorized";
 import { isAdvisorAuthenticated } from "../middlewares/isRoleAuthenticated";
 
 const router: Router = express.Router();
-
 
 router.get("/", checkReachable);
 
@@ -57,6 +57,13 @@ router.get(
   isAdvisorAuthenticated,
   isAdvisorsContract,
   getAdvisorForm
+);
+
+router.post(
+  "/contract/marks",
+  isAdvisorAuthenticated,
+  isAdvisorsContract,
+  postAdvisorMarks
 );
 
 export default router;

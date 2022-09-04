@@ -10,6 +10,8 @@ import { ContractModel } from "../models/contract.model";
 import Contract from "../schema/contract";
 import { AcceptanceStatus, isValidStatus } from "../enums/contract.enum";
 import { ContextModel } from "../models/context.model";
+import { MarksModel } from "../models/marks.model";
+import { isValidAdvisorMarks } from "../constants/marks";
 
 const saltRounds = 10;
 
@@ -225,7 +227,7 @@ export const StudentRequest = async (id: string, res: Response) => {
 
 export const AdvisorForm = async (id: string, res: Response) => {
     try{
-        const contract = await Contract.findById(id).select({advisorForm: 1})
+        const contract = await Contract.findById(id).select({advisorForm: 1, marks: { advisor: 1 }})
 
         return res.status(200).json({
             success: true,
@@ -235,6 +237,40 @@ export const AdvisorForm = async (id: string, res: Response) => {
     }catch(error){
         return res.status(500).json({
             success: false,
+            message: "Internal server error!"
+        })
+    }
+}
+
+export const AdvisorMarks = async (contract: ContractModel, res: Response) => {
+    try{
+        if(!isValidAdvisorMarks(contract.marks.advisor)){
+            return res.status(400).json({
+                status: false,
+                message: 'Invalid marks!'
+            })
+        }
+
+        const contractUpdated = await Contract.findOneAndUpdate(
+            { _id: contract.id },
+            { marks: { advisor: contract.marks.advisor } },
+            { new: true }
+        )
+        if(!contractUpdated){
+            return res.status(400).json({
+                status: false,
+                message: 'Something wrong!'
+            })
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Marks updated successfully!'
+        })
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({
+            status: false,
             message: "Internal server error!"
         })
     }

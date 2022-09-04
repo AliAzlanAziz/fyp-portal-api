@@ -16,6 +16,12 @@ const panelSchema = new Schema({
             ref: "User",
         }
     ],
+    contracts: [
+        {
+            type: Types.ObjectId,
+            ref: "Contract",
+        }
+    ],
     isClosed: {
         type: Boolean
     }

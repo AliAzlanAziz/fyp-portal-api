@@ -11,6 +11,10 @@ import {
   PanelDetails,
   AllPanels,
   ClosePanel,
+  AdminMarks,
+  AllContracts,
+  AddContractsToPanel,
+  AllContractsNotInPanel
 } from "../services/admin";
 
 export const checkReachable = (
@@ -61,6 +65,22 @@ export const getAdvisorDetails = (
   return AdvisorDetails(req.params.id as string, res);
 };
 
+export const getAllContracts = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return AllContracts(res);
+};
+
+export const getAllContractsNotInPanel = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return AllContractsNotInPanel(res);
+};
+
 export const getListOfStaffForPanel = (
   req: Request,
   res: Response,
@@ -99,4 +119,20 @@ export const postClosePanel = (
   next: NextFunction
 ) => {
   return ClosePanel(req.body.panel, res);
+};
+
+export const postAddContractsToPanel = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return AddContractsToPanel(req.body.panel, res);
+};
+
+export const postAdminMarks = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return AdminMarks(req.body.contract, res);
 };

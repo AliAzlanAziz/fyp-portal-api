@@ -36,6 +36,10 @@ const userSchema = new Schema({
     },
     inPanel: {
         type: Boolean
+    },
+    panel: {
+        type: Types.ObjectId,
+        ref: "Panel",
     }
 })
 
