@@ -3,5 +3,5 @@ export const CONTRACT = {
 } as const
 
 export const isLimitReached = (requests: number): boolean => {
-  return (requests > CONTRACT.MAX_ACCEPTED_REQUESTS);
+  return (requests >= CONTRACT.MAX_ACCEPTED_REQUESTS);
 };

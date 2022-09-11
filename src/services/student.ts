@@ -21,7 +21,10 @@ const saltRounds = 10;
 
 export const Signup = async (user: UserSignupModel, res: Response) => {
   try {
-    const userExist = await User.findOne({ email: user.email });
+    const userExist = await User.findOne().or([
+      { email: user.email },
+      { ID: user.ID },
+    ]);
     if (userExist) {
       return res.status(404).json({
         success: false,
@@ -29,7 +32,7 @@ export const Signup = async (user: UserSignupModel, res: Response) => {
       });
     }
 
-    if (user.password !== user.confirmPassword) {
+    if (user.password != user.confirmPassword) {
       return res.status(400).json({
         success: false,
         message: "Password does not match with confirm password!",
@@ -197,7 +200,7 @@ export const SelectAdvisor = async (
       }
     }
 
-    if (contract.studentOne.ID !== context.user.ID) {
+    if (contract.studentOne.ID != context.user.ID) {
       const otherStudentContractExist = await Contract.findOne().or([
         {
           studentOne: { ID: contract.studentOne.ID },
@@ -272,8 +275,12 @@ export const SelectAdvisor = async (
     }
 
     if (
-      contract.studentOne.ID !== context.user.ID &&
-      contract.studentTwo.ID !== context.user.ID
+      (contract.studentOne.ID != context.user.ID ||
+        contract.studentOne.name.toLocaleLowerCase() !=
+          context.user.name.toLocaleLowerCase()) &&
+      (contract.studentTwo.ID != context.user.ID ||
+        contract.studentTwo.name.toLocaleLowerCase() !=
+          context.user.name.toLocaleLowerCase())
     ) {
       return res.status(400).json({
         message:
@@ -281,8 +288,8 @@ export const SelectAdvisor = async (
       });
     }
     if (
-      contract.studentOne.ID === context.user.ID &&
-      contract.studentTwo.ID === context.user.ID
+      contract.studentOne.ID == context.user.ID &&
+      contract.studentTwo.ID == context.user.ID
     ) {
       return res.status(400).json({
         message: "Error! Same ID found for both students",
@@ -368,7 +375,7 @@ export const AllAdvisorsRequest = async (
         isClosed: 1,
         advisorForm: { _id: 1 },
         inPanel: 1,
-        panel: 1
+        panel: 1,
       });
 
     return res.status(200).json({
