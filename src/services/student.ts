@@ -519,3 +519,23 @@ export const AssignedPanelDetails = async (id: string, res: Response) => {
     });
   }
 };
+
+export const GetLogform = async (contractId: string, res: Response) => {
+  try {
+    let contract = await Contract.findById(contractId)
+      .populate("logformEntries")
+      .select({ logformEntries: 1 })
+      .lean();
+
+    res.status(200).json({
+      status: true,
+      logform: contract?.logformEntries,
+      message: "logform data",
+    });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "something went wrong", status: false, logform: [] });
+  }
+};

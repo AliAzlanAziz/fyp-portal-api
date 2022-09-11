@@ -15,7 +15,7 @@ import {
   postAdminMarks,
   getAllContracts,
   postAddContractsToPanel,
-  getAllContractsNotInPanel
+  getAllContractsNotInPanel,
 } from "../controllers/admin";
 import { isAdminAuthenticated } from "../middlewares/isRoleAuthenticated";
 

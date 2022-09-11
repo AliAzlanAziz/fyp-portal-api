@@ -11,6 +11,7 @@ import {
   postSubmitAdvisorForm,
   getAdvisorForm,
   getAssignedPanelDetails,
+  getTasks
 } from "../controllers/student";
 import { isStudentAuthenticated } from "../middlewares/isRoleAuthenticated";
 import { isStudentsContract } from "../middlewares/isStudentAuthorized";
@@ -62,6 +63,13 @@ router.get(
   isStudentAuthenticated,
   isStudentsContract,
   getAssignedPanelDetails
+);
+
+router.get(
+  "/contract/get-tasks/:id",
+  isStudentAuthenticated,
+  isStudentsContract,
+  getTasks
 );
 
 export default router;

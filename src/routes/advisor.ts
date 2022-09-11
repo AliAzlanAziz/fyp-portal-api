@@ -14,6 +14,10 @@ import {
   getAssignedPanelDetails,
   postPanelMidMarks,
   postPanelFinalMarks,
+  assignTask,
+  getTasks,
+  signTask,
+  deleteTask,
 } from "../controllers/advisor";
 import { isAdvisorsContract } from "../middlewares/isAdvisorAuthorized";
 import {
@@ -88,5 +92,23 @@ router.post(
   isInPanel,
   postPanelFinalMarks
 );
+
+router.post(
+  "/contract/assign-task",
+  isAdvisorAuthenticated,
+  isAdvisorsContract,
+  assignTask
+);
+
+router.get(
+  "/contract/get-tasks/:id",
+  isAdvisorAuthenticated,
+  isAdvisorsContract,
+  getTasks
+);
+
+router.get("/contract/delete-task/:id", deleteTask);
+
+router.get("/contract/sign-task/:id", signTask);
 
 export default router;

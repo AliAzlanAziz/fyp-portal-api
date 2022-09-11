@@ -11,6 +11,8 @@ import Contract from "../schema/contract";
 import { AcceptanceStatus, isValidStatus } from "../enums/contract.enum";
 import { ContextModel } from "../models/context.model";
 import Panel from "../schema/panel";
+import { LogformModel } from "../models/logform.model";
+import { Logform } from "../schema/logform";
 import {
   isValidAdvisorMarks,
   isValidFinalMarks,
@@ -118,7 +120,11 @@ export const Signin = async (user: UserSigninModel, res: Response) => {
   }
 };
 
-export const AcceptRequest = async (context: ContextModel, contract: ContractModel, res: Response) => {
+export const AcceptRequest = async (
+  context: ContextModel,
+  contract: ContractModel,
+  res: Response
+) => {
   try {
     const contractCount = await Contract.find({
       advisor: context.user._id,
@@ -349,40 +355,40 @@ export const AssignedPanelDetails = async (
       .select({ _id: 1, name: 1, members: 1, contracts: 1 })
       .lean();
 
-      for (let i=0 ; i<panel?.contracts?.length ; i++) {
-        if (panel?.contracts[i]?.marks?.admin) {
-          panel.contracts[i].marks.admin = null;
-        }
-        if (panel?.contracts[i]?.marks?.advisor) {
-          panel.contracts[i].marks.advisor = null;
-        }
-        if (panel?.contracts[i]?.marks?.mid) {
-          for (let midObj of panel?.contracts[i]?.marks?.mid) {
-            if (midObj?.evaluator?.toString() == context.user._id?.toString()) {
-              panel.contracts[i] = {
-                ...panel.contracts[i],
-                user: {
-                  ...panel.contracts[i]?.user,
-                  mid: midObj.marks,
-                },
-              };
-            }
-          }
-        }
-        if (panel?.contracts[i]?.marks?.final) {
-          for (let finalObj of panel?.contracts[i]?.marks?.final) {
-            if (finalObj?.evaluator?.toString() == context.user._id?.toString()) {
-              panel.contracts[i] = {
-                ...panel.contracts[i],
-                user: {
-                  ...panel.contracts[i]?.user,
-                  final: finalObj.marks,
-                },
-              };
-            }
+    for (let i = 0; i < panel?.contracts?.length; i++) {
+      if (panel?.contracts[i]?.marks?.admin) {
+        panel.contracts[i].marks.admin = null;
+      }
+      if (panel?.contracts[i]?.marks?.advisor) {
+        panel.contracts[i].marks.advisor = null;
+      }
+      if (panel?.contracts[i]?.marks?.mid) {
+        for (let midObj of panel?.contracts[i]?.marks?.mid) {
+          if (midObj?.evaluator?.toString() == context.user._id?.toString()) {
+            panel.contracts[i] = {
+              ...panel.contracts[i],
+              user: {
+                ...panel.contracts[i]?.user,
+                mid: midObj.marks,
+              },
+            };
           }
         }
       }
+      if (panel?.contracts[i]?.marks?.final) {
+        for (let finalObj of panel?.contracts[i]?.marks?.final) {
+          if (finalObj?.evaluator?.toString() == context.user._id?.toString()) {
+            panel.contracts[i] = {
+              ...panel.contracts[i],
+              user: {
+                ...panel.contracts[i]?.user,
+                final: finalObj.marks,
+              },
+            };
+          }
+        }
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -515,5 +521,88 @@ export const PanelFinalMarks = async (
       status: false,
       message: "Internal server error!",
     });
+  }
+};
+
+export const GetLogform = async (contractId: string, res: Response) => {
+  try {
+    let contract = await Contract.findById(contractId)
+      .populate("logformEntries")
+      .select({ logformEntries: 1 })
+      .lean();
+
+    res.status(200).json({
+      status: true,
+      logform: contract?.logformEntries,
+      message: "logform data",
+    });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "something went wrong", status: false, logform: [] });
+  }
+};
+
+export const AssignTask = async (
+  contractId: Types.ObjectId,
+  logformEntry: LogformModel,
+  res: Response
+) => {
+  try {
+    let ContractObj = await Contract.findById(contractId);
+    if (!ContractObj) {
+      return res
+        .status(404)
+        .json({ status: false, message: "No contract found" });
+    }
+
+    const taskDate = new Date();
+    taskDate.setDate(taskDate.getDate() + 7);
+
+    let logform = new Logform({
+      _id: new Types.ObjectId(),
+      taskAssigned: logformEntry.taskAssigned,
+      taskStatus: "",
+      date: taskDate,
+      advisorSigned: false,
+    });
+
+    await logform.save();
+
+    let Update = await Contract.findOneAndUpdate(
+      { _id: contractId },
+      { $addToSet: { logformEntries: logform._id } }
+    );
+
+    return res.status(201).json({ status: true, message: "entry updated" });
+  } catch (error) {
+    console.log(error);
+    console.log("error");
+  }
+};
+
+export const SignTask = async (id: string, res: Response) => {
+  try {
+    let logform = await Logform.findById(id);
+
+    let newStatus = !logform?.advisorSigned;
+
+    await Logform.updateOne(
+      { _id: id },
+      { $set: { advisorSigned: newStatus } }
+    );
+    res.status(201).json({ status: true, message: "updated" });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const DeleteTask = async (id: string, res: Response) => {
+  try {
+    await Logform.deleteOne({ _id: id });
+    res.status(201).json({ status: true, message: "deleted" });
+  } catch (error) {
+    console.log(error);
   }
 };

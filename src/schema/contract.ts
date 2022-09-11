@@ -1,5 +1,6 @@
 import { model, Schema, Types } from "mongoose";
 import { AcceptanceStatus } from "../enums/contract.enum";
+import { Logform } from "./logform";
 
 const contractSchema = new Schema({
     _id: {
@@ -151,7 +152,8 @@ const contractSchema = new Schema({
             min: 0,
             max: 10
         }
-    }
+    },
+    logformEntries: [{ type: Types.ObjectId, ref: Logform, required: false }]
 })
 
 const Contract = model('Contract', contractSchema);

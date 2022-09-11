@@ -12,6 +12,10 @@ import {
   AssignedPanelDetails,
   PanelMidMarks,
   PanelFinalMarks,
+  AssignTask,
+  GetLogform,
+  SignTask,
+  DeleteTask,
 } from "../services/advisor";
 
 export const checkReachable = (
@@ -113,3 +117,35 @@ export const postPanelFinalMarks = (
 ) => {
   return PanelFinalMarks(req.context, req.body.contract, res);
 };
+
+export const assignTask = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return AssignTask(req.body.contract.id, req.body.logformEntry, res);
+}
+
+export const getTasks = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return GetLogform(req.params.id, res);
+}
+
+export const deleteTask = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return DeleteTask(req.params.id, res);
+}
+
+export const signTask = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return SignTask(req.params.id, res);
+}
