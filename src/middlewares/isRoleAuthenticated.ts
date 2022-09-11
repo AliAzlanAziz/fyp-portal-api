@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import User from "../schema/user";
 import { ContextModel } from "../models/context.model";
 import { isAdmin, isAdvisor, isPanel, isStudent } from "../enums/roles.enum";
+import { ContractModel } from "../models/contract.model";
+import Panel from "../schema/panel";
 
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
     try{
@@ -180,6 +182,41 @@ export const isPanelAuthenticated = async (req: Request, res: Response, next: Ne
     }catch(error){
         return res.status(500).json({
             message: "Internal Server Error!"
+        })
+    }
+}
+
+export const isInPanel = async (req: Request, res: Response, next: NextFunction) =>{
+    try{
+        const context = req.context;
+        const contract = req.body.contract;
+        
+        const panel = await Panel.findById(contract.panel).lean();
+        if(!panel){
+            return res.status(400).json({
+                status: false,
+                message: 'Panel does not exist!'
+            })
+        }
+
+        let inPanel = false;
+        for(const id of panel.members){
+            if(context.user._id.toString() === id.toString()){
+                inPanel = true;
+            }
+        }
+        if(!inPanel){
+            return res.status(400).json({
+                status: false,
+                message: 'You are not in that panel!'
+            })
+        }
+
+        return next();
+    }catch(error){
+        return res.status(500).json({
+            status: false,
+            message: "Internal server error!"
         })
     }
 }

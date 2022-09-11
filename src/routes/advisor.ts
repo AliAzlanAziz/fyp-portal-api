@@ -1,4 +1,5 @@
 import express, { Router } from "express";
+import { getPanelDetails } from "../controllers/admin";
 import {
   checkReachable,
   postSignup,
@@ -10,9 +11,15 @@ import {
   getStudentRequest,
   getAdvisorForm,
   postAdvisorMarks,
+  getAssignedPanelDetails,
+  postPanelMidMarks,
+  postPanelFinalMarks,
 } from "../controllers/advisor";
 import { isAdvisorsContract } from "../middlewares/isAdvisorAuthorized";
-import { isAdvisorAuthenticated } from "../middlewares/isRoleAuthenticated";
+import {
+  isAdvisorAuthenticated,
+  isInPanel,
+} from "../middlewares/isRoleAuthenticated";
 
 const router: Router = express.Router();
 
@@ -64,6 +71,22 @@ router.post(
   isAdvisorAuthenticated,
   isAdvisorsContract,
   postAdvisorMarks
+);
+
+router.get("/panel", isAdvisorAuthenticated, getAssignedPanelDetails);
+
+router.post(
+  "/contract/midmarks",
+  isAdvisorAuthenticated,
+  isInPanel,
+  postPanelMidMarks
+);
+
+router.post(
+  "/contract/finalmarks",
+  isAdvisorAuthenticated,
+  isInPanel,
+  postPanelFinalMarks
 );
 
 export default router;

@@ -9,6 +9,9 @@ import {
   StudentRequest,
   AdvisorForm,
   AdvisorMarks,
+  AssignedPanelDetails,
+  PanelMidMarks,
+  PanelFinalMarks,
 } from "../services/advisor";
 
 export const checkReachable = (
@@ -32,7 +35,7 @@ export const postAcceptRequest = (
   res: Response,
   next: NextFunction
 ) => {
-  return AcceptRequest(req.body.contract, res);
+  return AcceptRequest(req.context, req.body.contract, res);
 };
 
 export const postRejectRequest = (
@@ -85,4 +88,28 @@ export const postAdvisorMarks = (
   next: NextFunction
 ) => {
   return AdvisorMarks(req.body.contract, res);
+};
+
+export const getAssignedPanelDetails = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return AssignedPanelDetails(req.context, res);
+};
+
+export const postPanelMidMarks = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return PanelMidMarks(req.context, req.body.contract, res);
+};
+
+export const postPanelFinalMarks = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return PanelFinalMarks(req.context, req.body.contract, res);
 };

@@ -122,7 +122,7 @@ const contractSchema = new Schema({
                     type: Types.ObjectId,
                     ref: 'User'
                 },
-                mark: {
+                marks: {
                     type: Number,
                     min: 0,
                     max: 20
@@ -135,10 +135,10 @@ const contractSchema = new Schema({
                     type: Types.ObjectId,
                     ref: 'User'
                 },
-                mark: {
+                marks: {
                     type: Number,
                     min: 0,
-                    max: 20
+                    max: 40
                 },
             }
         ],

@@ -50,8 +50,18 @@ export class ContractModel  {
         };
         referenceNo: String;
     };
+    panel: String;
+    inPanel: Boolean;
     marks: {
         admin: Number,
-        advisor: Number
+        advisor: Number,
+        mid: {
+            evaluator: String;
+            marks: Number;
+        },
+        final: {
+            evaluator: String;
+            marks: Number;
+        }
     }
 }
